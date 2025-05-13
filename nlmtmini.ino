@@ -14,6 +14,8 @@ String dungluongconlai;
 String ssudung;
 String snapvao = "đang cập nhật";
 String thongbao="đang cập nhật";
+float energy_Wh = 0.0;
+unsigned long lastTime = 0;
 WebServer server(80);
 
 void setup() {
@@ -33,26 +35,29 @@ void setup() {
   setupOTA();
   timer.attach(1.0, getpower);
 }
-void getpower()
-{
-  dungluongconlai=String(ina.getBusVoltage(),2) +"v";
-  ssudung=String(ina.getBusVoltage(),2) +"v | "+String(ina.getCurrent_mA()/1000,2)+"A | "+ String(ina.getPower_mW()/1000,2)+"W";
+void getpower() {
+  unsigned long now = millis();
+  float dt = (now - lastTime) / 1000.0;  // thời gian delta (giây)
+  lastTime = now;
 
-  Serial.print("Điện áp Bus (V): ");
-  Serial.println(ina.getBusVoltage(), 3);
+  float voltage = ina.getBusVoltage();                // V
+  float current = ina.getCurrent_mA() / 1000.0;       // A
+  float power = voltage * current;                    // W
 
-  Serial.print("Điện áp Shunt (mV): ");
-  Serial.println(ina.getShuntVoltage_mV(), 3);
+  energy_Wh += power * dt / 3600.0;                   // Wh = W * giờ
 
-  Serial.print("Dòng (mA): ");
-  Serial.println(ina.getCurrent_mA(), 3);
-
-  Serial.print("Công suất (mW): ");
-  Serial.println(ina.getPower_mW(), 3);
+  // Cập nhật chuỗi hiển thị
+  dungluongconlai = String(voltage, 2) + "v";
+  ssudung = String(voltage, 2) + "v | " 
+          + String(current, 2) + "A | " 
+          + String(power, 2) + "W | " 
+          + String(energy_Wh, 4) + "Wh";
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
   server.on("/", handleRoot2);
+  server.on("/caidat",web_caidat);
+  server.on("/savesetting1", HTTP_POST, handleSaveSetting1);
   server.on("/updatefw", updatefw);
    server.on("/trangchu2", handleRoot);
   // Thêm router cho yêu cầu dữ liệu
@@ -187,6 +192,7 @@ void handleRoot2() {
   html += "<div class='card'><h2>Sử dụng</h2><div class='value' id='ssudung'>N/A</div></div>";
   html += "<div class='card'><h2>Thông báo</h2><div class='value' id='thongbao'>N/A</div></div>";
   html += "<form action='/updatefw' method='GET'><input type='submit' value='Cập nhật Firmware'></form>";
+  html += "<form action='/caidat' method='GET'><input type='submit' value='Cài đặt'></form>";
   html += "<footer>";
   html += "Ver: " + VERSION + "<br>";
   html += "IP: " + WiFi.localIP().toString();
@@ -218,4 +224,55 @@ void updatefw() {
   html += "</form>";
   html += "</body></html>";
   server.send(200, "text/html; charset=UTF-8", html);
+}
+void web_caidat() {
+  String html = "<!DOCTYPE html><html><head>";
+  html += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>";
+  html += "<style>";
+  html += "body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }";
+  html += "header { background: #4CAF50; color: white; padding: 20px; width: 100%; text-align: center; }";
+  html += "main { padding: 20px; width: 100%; max-width: 600px; }";
+  html += ".card { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-radius: 10px; padding: 20px; margin: 10px 0; }";
+  html += ".card h2 { margin-top: 0; font-size: 1.2em; color: #333; }";
+  html += ".value { font-size: 1.2em; margin-top: 10px; }";
+  html += "input[type='text'] { width: 100%; padding: 10px; font-size: 1em; border: 1px solid #ccc; border-radius: 5px; }";
+  html += "input[type='submit'] { background: #4CAF50; color: white; border: none; padding: 10px 20px; font-size: 1em; border-radius: 5px; cursor: pointer; margin-top: 10px; }";
+  html += "input[type='submit']:hover { background: #45a049; }";
+  html += "input[type='text'], input[type='number'] {width: 100%;padding: 10px;font-size: 1em;box-sizing: border-box;border: 1px solid #ccc;border-radius: 5px;}";
+  html += "</style>";
+  html += "</head><body>";
+  html += "<header><h1>Cài đặt hệ thống</h1></header>";
+  html += "<main>";
+
+  // Mỗi card là một biểu mẫu riêng
+  html += "<form method='POST' action='/savesetting1'><div class='card'>";
+  html += "<h2>Cài lại Wh sử dụng</h2>";
+  html += "<input type='number' min='0' name='setting1' value='" + String((int)energy_Wh) + "'>";
+  html += "<input type='submit' value='Lưu'>";
+  html += "</div></form>";
+
+  html += "<form method='POST' action='/savesetting2'><div class='card'>";
+  html += "<h2>Thông số 2</h2>";
+  html += "<input type='text' name='setting2' placeholder='Nhập giá trị...'>";
+  html += "<input type='submit' value='Lưu'>";
+  html += "</div></form>";
+
+  html += "<form method='POST' action='/savesetting3'><div class='card'>";
+  html += "<h2>Thông số 3</h2>";
+  html += "<input type='text' name='setting3' placeholder='Nhập giá trị...'>";
+  html += "<input type='submit' value='Lưu'>";
+  html += "</div></form>";
+
+  html += "</main></body></html>";
+  server.send(200, "text/html; charset=UTF-8", html);
+}
+void handleSaveSetting1() {
+  if (server.hasArg("setting1")) {
+    String value = server.arg("setting1");
+    Serial.println("Đã lưu setting1: " + value);
+    energy_Wh = value.toFloat();
+    // Lưu vào EEPROM hoặc biến toàn cục nếu cần
+  }
+  server.sendHeader("Location", "/caidat");
+  server.send(303);  // Redirect về trang settings
 }
