@@ -35,7 +35,7 @@ void setup() {
 void getpower()
 {
   dungluongconlai=String(ina.getBusVoltage(),2) +"v";
-  ssudung=String(ina.getBusVoltage(),2) +"v | "+String(ina.getCurrent_mA()*1000,2)+"A | "+ String(ina.getPower_mW()*1000,2)+"W";
+  ssudung=String(ina.getBusVoltage(),2) +"v | "+String(ina.getCurrent_mA()/1000,2)+"A | "+ String(ina.getPower_mW()/1000,2)+"W";
 
   Serial.print("Điện áp Bus (V): ");
   Serial.println(ina.getBusVoltage(), 3);
