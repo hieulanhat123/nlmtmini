@@ -11,7 +11,7 @@
 Ticker timer; 
 INA226 ina(0x40);
 String dungluongconlai;
-String ssudung = "đang cập nhật";
+String ssudung;
 String snapvao = "đang cập nhật";
 String thongbao="đang cập nhật";
 WebServer server(80);
