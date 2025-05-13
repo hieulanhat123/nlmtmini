@@ -28,13 +28,24 @@ void setup() {
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("Connected to Wi-Fi IP:"+WiFi.localIP().toString());
   }
-  ina.setMaxCurrentShunt(30, 0.002);
+  ina.setMaxCurrentShunt(30, 0.00215);
   setupOTA();
   timer.attach(1.0, getpower);
 }
 void getpower()
 {
   dungluongconlai=String(ina.getBusVoltage(),2) +"v";
+  Serial.print("Điện áp Bus (V): ");
+  Serial.println(ina.getBusVoltage(), 3);
+
+  Serial.print("Điện áp Shunt (mV): ");
+  Serial.println(ina.getShuntVoltage_mV(), 3);
+
+  Serial.print("Dòng (mA): ");
+  Serial.println(ina.getCurrent_mA(), 3);
+
+  Serial.print("Công suất (mW): ");
+  Serial.println(ina.getPower_mW(), 3);
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
