@@ -29,6 +29,7 @@ void setup() {
     Serial.println("Connected to Wi-Fi IP:"+WiFi.localIP().toString());
   }
   ina.setMaxCurrentShunt(30, 0.00215);
+  ina.setAverage(INA226_1024_SAMPLES);
   setupOTA();
   timer.attach(1.0, getpower);
 }
@@ -51,9 +52,9 @@ void getpower()
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
-  server.on("/", handleRoot);
+  server.on("/", handleRoot2);
   server.on("/updatefw", updatefw);
-   server.on("/trangchu2", handleRoot2);
+   server.on("/trangchu2", handleRoot);
   // Thêm router cho yêu cầu dữ liệu
   server.on("/data", handleData);
   // Xử lý OTA trên /update
