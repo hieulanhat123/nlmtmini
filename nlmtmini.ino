@@ -51,7 +51,7 @@ void getpower() {
   ssudung = String(voltage, 2) + "v | " 
           + String(current, 2) + "A | " 
           + String(power, 2) + "W | " 
-          + String(energy_Wh, 4) + "Wh";
+          + String(energy_Wh,2) + "Wh";
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
