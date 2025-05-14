@@ -48,8 +48,7 @@ void getpower() {
 
   // Cập nhật chuỗi hiển thị
   dungluongconlai = String(voltage, 2) + "v";
-  ssudung = String(voltage, 2) + "v | " 
-          + String(current, 2) + "A | " 
+  ssudung = String(current, 2) + "A | " 
           + String(power, 2) + "W | " 
           + String(energy_Wh,2) + "Wh";
 }
