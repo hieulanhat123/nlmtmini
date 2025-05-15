@@ -13,9 +13,10 @@ INA226 ina(0x40);
 INA226 ina2(0x41);
 String dungluongconlai;
 String ssudung;
-String snapvao = "đang cập nhật";
+String snapvao = "";
 String thongbao="";
 float energy_Wh = 0.0;
+float energy_Wh_nap = 0.0;
 unsigned long lastTime = 0;
 WebServer server(80);
 
@@ -41,6 +42,8 @@ void setup() {
   }
   ina.setMaxCurrentShunt(30, 0.00215);
   ina.setAverage(INA226_1024_SAMPLES);
+  ina2.setMaxCurrentShunt(30, 0.00215);
+  ina2.setAverage(INA226_1024_SAMPLES);
   setupOTA();
   timer.attach(1.0, getpower);
 }
@@ -48,18 +51,22 @@ void getpower() {
   unsigned long now = millis();
   float dt = (now - lastTime) / 1000.0;  // thời gian delta (giây)
   lastTime = now;
-
-  float voltage = ina.getBusVoltage();                // V
-  float current = ina.getCurrent_mA() / 1000.0;       // A
-  float power = voltage * current;                    // W
-
-  energy_Wh += power * dt / 3600.0;                   // Wh = W * giờ
-
+  float voltage = ina.getBusVoltage();
+  float current = ina.getCurrent_mA() / 1000.0;
+  float power = voltage * current;
+  float voltagenap = ina2.getBusVoltage();
+  float currentnap = ina2.getCurrent_mA() / 1000.0;
+  float powernap = voltagenap * currentnap;   
+  energy_Wh += power * dt / 3600.0; 
+  energy_Wh_nap += powernap * dt / 3600.0;
   // Cập nhật chuỗi hiển thị
   dungluongconlai = String(voltage, 2) + "v";
-  ssudung = String(current, 2) + "A | " 
-          + String(power, 2) + "W | " 
-          + String(energy_Wh,2) + "Wh";
+  ssudung = String(current, 3) + "A | " 
+          + String(power, 3) + "W | " 
+          + String(energy_Wh,3) + "Wh";
+  snapvao = String(currentnap,3) + "A | " 
+          + String(powernap,3) + "W | "
+          + String(energy_Wh_nap,3) + "Wh";
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
@@ -134,9 +141,9 @@ void handleRoot() {
   html += "input[type='submit']:hover { background: #45a049; }";
 
   // CSS chạy chữ
-  html += ".scrolling-container { overflow: hidden; white-space: nowrap; }";
-  html += ".scrolling-text { display: inline-block; padding-left: 100%; animation: scroll-left 10s linear infinite; }";
-  html += "@keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }";
+html += ".scrolling-container { overflow: hidden; white-space: nowrap; width: 100%; box-sizing: border-box; }";
+html += ".scrolling-text { display: inline-block; padding-left: 100%; min-width: max-content; animation: scroll-left 10s linear infinite; }";
+html += "@keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }";
 
   html += "</style>";
   html += "<script>";
@@ -224,8 +231,8 @@ void web_caidat() {
   html += "</div></form>";
 
   html += "<form method='POST' action='/savesetting2'><div class='card'>";
-  html += "<h2>Thông số 2</h2>";
-  html += "<input type='text' name='setting2' placeholder='Nhập giá trị...'>";
+  html += "<h2>Cài lại Wh nạp</h2>";
+  html += "<input type='number' min='0' name='setting2' value='" + String((int)energy_Wh_nap) + "'>";
   html += "<input type='submit' value='Lưu'>";
   html += "</div></form>";
 
