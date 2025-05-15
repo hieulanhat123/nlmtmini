@@ -73,6 +73,7 @@ void setupOTA() {
   server.on("/", handleRoot);
   server.on("/caidat",web_caidat);
   server.on("/savesetting1", HTTP_POST, handleSaveSetting1);
+  server.on("/savesetting2", HTTP_POST, handleSaveSetting2);
   server.on("/updatefw", updatefw);
   // Thêm router cho yêu cầu dữ liệu
   server.on("/data", handleData);
@@ -250,6 +251,16 @@ void handleSaveSetting1() {
     String value = server.arg("setting1");
     Serial.println("Đã lưu setting1: " + value);
     energy_Wh = value.toFloat();
+    // Lưu vào EEPROM hoặc biến toàn cục nếu cần
+  }
+  server.sendHeader("Location", "/caidat");
+  server.send(303);  // Redirect về trang settings
+}
+void handleSaveSetting2() {
+  if (server.hasArg("setting2")) {
+    String value = server.arg("setting2");
+    Serial.println("Đã lưu setting2: " + value);
+    energy_Wh_nap = value.toFloat();
     // Lưu vào EEPROM hoặc biến toàn cục nếu cần
   }
   server.sendHeader("Location", "/caidat");
