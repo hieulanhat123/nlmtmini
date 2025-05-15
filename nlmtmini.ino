@@ -163,12 +163,12 @@ html += "@keyframes scroll-left { 0% { transform: translateX(0); } 100% { transf
   html += "</head><body>";
   html += "<header><h1>Hệ thống MLMT mini 12V</h1></header>";
   html += "<main>";
-  html += "<div class='card'><h2>Dung lượng còn lại</h2><div class='value' id='dungluongconlai'>N/A</div></div>";
-  html += "<div class='card'><h2>Nạp vào</h2><div class='value' id='snapvao'>N/A</div></div>";
-  html += "<div class='card'><h2>Sử dụng</h2><div class='value' id='ssudung'>N/A</div></div>";
+  html += "<div class='card'><h2>Dung lượng còn lại</h2><div class='value' id='dungluongconlai'>Loading</div></div>";
+  html += "<div class='card'><h2>Nạp vào</h2><div class='value' id='snapvao'>Loading</div></div>";
+  html += "<div class='card'><h2>Sử dụng</h2><div class='value' id='ssudung'>Loading</div></div>";
 
   // Thông báo có chạy chữ
-  html += "<div class='card'><h2>Thông báo</h2><div class='scrolling-container'><div class='value scrolling-text' id='thongbao'>N/A</div></div></div>";
+  html += "<div class='card'><h2>Thông báo</h2><div class='scrolling-container'><div class='value scrolling-text' id='thongbao'>Loading</div></div></div>";
 
   html += "<form action='/caidat' method='GET'><input type='submit' value='Cài đặt'></form>";
   html += "<form action='/updatefw' method='GET'><input type='submit' value='Cập nhật Firmware'></form>";
