@@ -61,12 +61,12 @@ void getpower() {
   energy_Wh_nap += powernap * dt / 3600.0;
   // Cập nhật chuỗi hiển thị
   dungluongconlai = String(voltage, 2) + "v";
-  ssudung = String(current, 3) + "A | " 
-          + String(power, 3) + "W | " 
-          + String(energy_Wh,3) + "Wh";
-  snapvao = String(currentnap,3) + "A | " 
-          + String(powernap,3) + "W | "
-          + String(energy_Wh_nap,3) + "Wh";
+  ssudung = String(current,2) + "A | " 
+          + String(power,2) + "W | " 
+          + String(energy_Wh,2) + "Wh";
+  snapvao = String(currentnap,2) + "A | " 
+          + String(powernap,2) + "W | "
+          + String(energy_Wh_nap,2) + "Wh";
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
@@ -142,9 +142,9 @@ void handleRoot() {
   html += "input[type='submit']:hover { background: #45a049; }";
 
   // CSS chạy chữ
-html += ".scrolling-container { overflow: hidden; white-space: nowrap; width: 100%; box-sizing: border-box; }";
-html += ".scrolling-text { display: inline-block; padding-left: 100%; min-width: max-content; animation: scroll-left 10s linear infinite; }";
-html += "@keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }";
+  html += ".scrolling-container { overflow: hidden; white-space: nowrap; width: 100%; box-sizing: border-box; }";
+  html += ".scrolling-text { display: inline-block; padding-left: 100%; min-width: max-content; animation: scroll-left 10s linear infinite; }";
+  html += "@keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }";
 
   html += "</style>";
   html += "<script>";
