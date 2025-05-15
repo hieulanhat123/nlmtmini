@@ -10,10 +10,11 @@
 
 Ticker timer; 
 INA226 ina(0x40);
+INA226 ina2(0x41);
 String dungluongconlai;
 String ssudung;
 String snapvao = "đang cập nhật";
-String thongbao="đang cập nhật";
+String thongbao="";
 float energy_Wh = 0.0;
 unsigned long lastTime = 0;
 WebServer server(80);
@@ -21,6 +22,14 @@ WebServer server(80);
 void setup() {
   Serial.begin(115200);
   Wire.begin();
+  if(!ina.begin() )
+  {
+    thongbao+="Không tìm thấy module INA226 Xả;";
+  }
+  if(!ina2.begin() )
+  {
+    thongbao+="Không tìm thấy module INA226 Nạp;";
+  }
   // Wi-Fi connection setup
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
@@ -54,11 +63,10 @@ void getpower() {
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
-  server.on("/", handleRoot2);
+  server.on("/", handleRoot);
   server.on("/caidat",web_caidat);
   server.on("/savesetting1", HTTP_POST, handleSaveSetting1);
   server.on("/updatefw", updatefw);
-   server.on("/trangchu2", handleRoot);
   // Thêm router cho yêu cầu dữ liệu
   server.on("/data", handleData);
   // Xử lý OTA trên /update
@@ -111,51 +119,6 @@ void handleUpdate() {
   }
 }
 void handleRoot() {
-  String html = "<html><head>";
-  html += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"; // Thiết lập viewport cho mobile
-  html += "<style>";
-  html += "body { font-family: Arial, sans-serif; display: flex; justify-content: flex-start; align-items: center; height: 100vh; flex-direction: column; text-align: center; padding-top: 20px; }"; // Căn giữa theo chiều dọc và chiều ngang
-  html += "h1 { margin: 0; font-size: 1.5em; }"; // Kích thước chữ lớn hơn cho tiêu đề
-  html += "h2 { margin: 10px 0; font-size: 1.5em; }"; // Kích thước chữ cho h2
-  html += "div { font-size: 1.2em; margin: 5px 0; }"; // Kích thước chữ cho các div
-  html += "form { margin-top: 20px; }"; // Thêm khoảng cách trên form
-  html += "input[type='submit'] { padding: 10px 20px; font-size: 1em; }"; // Định dạng nút submit
-  html += "</style>";
-  html += "<script>";
-  // Thêm một đoạn script để định kỳ gọi thông tin
-  html += "function fetchData() {";
-  html += "  fetch('/data')"; // Gọi đến /data để lấy thông số
-  html += "    .then(response => response.json())"; // Nhận dữ liệu JSON
-  html += "    .then(data => {";
-  html += "      document.getElementById('dungluongconlai').innerText = data.dungluongconlai;";
-  html += "      document.getElementById('ssudung').innerText = data.ssudung;";
-  html += "      document.getElementById('snapvao').innerText = data.snapvao;";
-  html += "      document.getElementById('thongbao').innerText = data.thongbao;";
-  html += "    });";
-  html += "}";
-  html += "setInterval(fetchData, 1000);"; // Cập nhật mỗi 1 giây
-  html += "</script>";
-  html += "</head><body>";
-  html += "<h1>Hệ thống MLMT mini 12v</h1>";
-  html += "<br><br><br>";
-  html += "<h2>Dung lượng còn lại</h2>";
-  html += "<div id='dungluongconlai'>Dung lượng còn lại: N/A</div>";
-  html += "<h2>Nạp vào</h2>";
-  html += "<div id='snapvao'>Sạc vào: N/A</div>";
-  html += "<h2>Sử dụng</h2>";
-  html += "<div id='ssudung'>Sử dụng: N/A</div>";
-  html += "<h2>Thông báo</h2>";
-  html += "<div id='thongbao'>Thông báo: N/A</div>";
-  html += "<br><br><br>";
-  html += "<div>Ver: " + VERSION + "<div>";
-  html += "<div>IP: " + WiFi.localIP().toString() + "</div>";
-  html += "<form action='/updatefw' method='GET'>";
-  html += "<input type='submit' value='Cập nhật FW'>";
-  html += "</form>";
-  html += "</body></html>";
-  server.send(200, "text/html; charset=UTF-8", html);
-}
-void handleRoot2() {
   String html = "<!DOCTYPE html><html><head>";
   html += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>";
   html += "<style>";
@@ -169,6 +132,12 @@ void handleRoot2() {
   html += "form { margin-top: 20px; text-align: center; }";
   html += "input[type='submit'] { background: #4CAF50; color: white; border: none; padding: 10px 20px; font-size: 1em; border-radius: 5px; cursor: pointer; }";
   html += "input[type='submit']:hover { background: #45a049; }";
+
+  // CSS chạy chữ
+  html += ".scrolling-container { overflow: hidden; white-space: nowrap; }";
+  html += ".scrolling-text { display: inline-block; padding-left: 100%; animation: scroll-left 10s linear infinite; }";
+  html += "@keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }";
+
   html += "</style>";
   html += "<script>";
   html += "function fetchData() {";
@@ -189,9 +158,12 @@ void handleRoot2() {
   html += "<div class='card'><h2>Dung lượng còn lại</h2><div class='value' id='dungluongconlai'>N/A</div></div>";
   html += "<div class='card'><h2>Nạp vào</h2><div class='value' id='snapvao'>N/A</div></div>";
   html += "<div class='card'><h2>Sử dụng</h2><div class='value' id='ssudung'>N/A</div></div>";
-  html += "<div class='card'><h2>Thông báo</h2><div class='value' id='thongbao'>N/A</div></div>";
-  html += "<form action='/updatefw' method='GET'><input type='submit' value='Cập nhật Firmware'></form>";
+
+  // Thông báo có chạy chữ
+  html += "<div class='card'><h2>Thông báo</h2><div class='scrolling-container'><div class='value scrolling-text' id='thongbao'>N/A</div></div></div>";
+
   html += "<form action='/caidat' method='GET'><input type='submit' value='Cài đặt'></form>";
+  html += "<form action='/updatefw' method='GET'><input type='submit' value='Cập nhật Firmware'></form>";
   html += "<footer>";
   html += "Ver: " + VERSION + "<br>";
   html += "IP: " + WiFi.localIP().toString();
@@ -199,6 +171,7 @@ void handleRoot2() {
   html += "</main></body></html>";
   server.send(200, "text/html; charset=UTF-8", html);
 }
+
 void handleData() {
   String json = "{";
   json += "\"dungluongconlai\": \"" +String(dungluongconlai) + "\",";
