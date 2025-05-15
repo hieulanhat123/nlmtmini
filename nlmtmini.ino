@@ -9,8 +9,8 @@
 #define VERSION String(__DATE__) + " " + String(__TIME__)
 
 Ticker timer; 
-INA226 ina(0x40);
-INA226 ina2(0x41);
+INA226 ina(0x41);
+INA226 ina2(0x40);
 String dungluongconlai;
 String ssudung;
 String snapvao = "";
