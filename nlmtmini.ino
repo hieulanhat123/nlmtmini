@@ -27,13 +27,15 @@ WebServer server(80);
 void setup() {
   Serial.begin(115200);
   Wire.begin();
-  if(!ina.begin() )
+  if(ina.begin() )
   {
-    thongbao+="Không tìm thấy module INA226 Xả;";
+    ina.setMaxCurrentShunt(30, 0.00215);
+    ina.setAverage(INA226_1024_SAMPLES);
   }
-  if(!ina2.begin() )
+  if(ina2.begin() )
   {
-    thongbao+="Không tìm thấy module INA226 Nạp;";
+    ina2.setMaxCurrentShunt(30, 0.00215);
+    ina2.setAverage(INA226_1024_SAMPLES);
   }
   // Wi-Fi connection setup
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -49,35 +51,45 @@ void setup() {
     Serial.println(F("Không tìm thấy màn hình OLED"));
     for (;;); // Dừng tại đây nếu không tìm thấy
   }
-
-  
-  ina.setMaxCurrentShunt(30, 0.00215);
-  ina.setAverage(INA226_1024_SAMPLES);
-  ina2.setMaxCurrentShunt(30, 0.00215);
-  ina2.setAverage(INA226_1024_SAMPLES);
   setupOTA();
   timer.attach(1.0, getpower);
 }
 void getpower() {
+  
   unsigned long now = millis();
   float dt = (now - lastTime) / 1000.0;  // thời gian delta (giây)
   lastTime = now;
+  if(!ina.begin() )
+  {
+    ssudung="Không tìm thấy module INA226 Xả;";
+  }
+  else
+  {
   float voltage = ina.getBusVoltage();
   float current = ina.getCurrent_mA() / 1000.0;
-  float power = voltage * current;
-  float voltagenap = ina2.getBusVoltage();
-  float currentnap = ina2.getCurrent_mA() / 1000.0;
-  float powernap = voltagenap * currentnap;   
-  energy_Wh += power * dt / 3600.0; 
-  energy_Wh_nap += powernap * dt / 3600.0;
-  // Cập nhật chuỗi hiển thị
   dungluongconlai = String(voltage, 2) + "v";
+  float power = voltage * current;
+  energy_Wh += power * dt / 3600.0;
   ssudung = String(current,2) + "A | " 
           + String(power,2) + "W | " 
-          + String(energy_Wh,2) + "Wh";
+          + String(energy_Wh,2) + "Wh"; 
+  }
+  if(!ina2.begin() )
+  {
+    snapvao="Không tìm thấy module INA226 Nạp;";
+  }
+  else
+  {
+  float voltagenap = ina2.getBusVoltage();
+  float currentnap = ina2.getCurrent_mA() / 1000.0;
+   float powernap = voltagenap * currentnap;
+  energy_Wh_nap += powernap * dt / 3600.0;
+  // Cập nhật chuỗi hiển thị
   snapvao = String(currentnap,2) + "A | " 
           + String(powernap,2) + "W | "
           + String(energy_Wh_nap,2) + "Wh";
+  }
+ 
   display.clearDisplay();
   // Hiển thị chữ
   display.setTextSize(1);             // Cỡ chữ (1~3)
@@ -158,12 +170,6 @@ void handleRoot() {
   html += "form { margin-top: 20px; text-align: center; }";
   html += "input[type='submit'] { background: #4CAF50; color: white; border: none; padding: 10px 20px; font-size: 1em; border-radius: 5px; cursor: pointer; }";
   html += "input[type='submit']:hover { background: #45a049; }";
-
-  // CSS chạy chữ
-  html += ".scrolling-container { overflow: hidden; white-space: nowrap; width: 100%; box-sizing: border-box; }";
-  html += ".scrolling-text { display: inline-block; padding-left: 100%; min-width: max-content; animation: scroll-left 10s linear infinite; }";
-  html += "@keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }";
-
   html += "</style>";
   html += "<script>";
   html += "function fetchData() {";
@@ -184,10 +190,7 @@ void handleRoot() {
   html += "<div class='card'><h2>Dung lượng còn lại</h2><div class='value' id='dungluongconlai'>Loading</div></div>";
   html += "<div class='card'><h2>Nạp vào</h2><div class='value' id='snapvao'>Loading</div></div>";
   html += "<div class='card'><h2>Sử dụng</h2><div class='value' id='ssudung'>Loading</div></div>";
-
-  // Thông báo có chạy chữ
-  html += "<div class='card'><h2>Thông báo</h2><div class='scrolling-container'><div class='value scrolling-text' id='thongbao'>Loading</div></div></div>";
-
+  html += "<div class='card'><h2>Thông báo</h2><div class='value' id='thongbao'>Loading</div></div>";
   html += "<form action='/caidat' method='GET'><input type='submit' value='Cài đặt'></form>";
   html += "<form action='/updatefw' method='GET'><input type='submit' value='Cập nhật Firmware'></form>";
   html += "<footer>";
