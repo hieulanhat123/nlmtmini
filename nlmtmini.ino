@@ -4,13 +4,17 @@
 #include <WebServer.h>
 #include <Update.h>
 #include <Ticker.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 #define WIFI_SSID "Hieu 2G"
 #define WIFI_PASSWORD ""
 #define VERSION String(__DATE__) + " " + String(__TIME__)
+#define OLED_RESET    -1 // Reset không cần thiết với I2C
+Adafruit_SSD1306 display(128,64, &Wire, OLED_RESET);
 
 Ticker timer; 
-INA226 ina(0x41);
-INA226 ina2(0x40);
+INA226 ina(0x50);
+INA226 ina2(0x51);
 String dungluongconlai;
 String ssudung;
 String snapvao = "";
@@ -40,6 +44,13 @@ void setup() {
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("Connected to Wi-Fi IP:"+WiFi.localIP().toString());
   }
+    // Khởi tạo màn hình
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Địa chỉ I2C có thể là 0x3C hoặc 0x3D
+    Serial.println(F("Không tìm thấy màn hình OLED"));
+    for (;;); // Dừng tại đây nếu không tìm thấy
+  }
+
+  
   ina.setMaxCurrentShunt(30, 0.00215);
   ina.setAverage(INA226_1024_SAMPLES);
   ina2.setMaxCurrentShunt(30, 0.00215);
@@ -67,6 +78,13 @@ void getpower() {
   snapvao = String(currentnap,2) + "A | " 
           + String(powernap,2) + "W | "
           + String(energy_Wh_nap,2) + "Wh";
+  display.clearDisplay();
+  // Hiển thị chữ
+  display.setTextSize(1);             // Cỡ chữ (1~3)
+  display.setTextColor(SSD1306_WHITE); // Màu chữ
+  display.setCursor(0, 0);      // Vị trí bắt đầu
+  display.println(dungluongconlai);
+  display.display();
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
