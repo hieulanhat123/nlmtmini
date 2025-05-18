@@ -25,9 +25,9 @@ String snapvao = "";
 String thongbao="";
 float energy_Wh = 0.0;
 float energy_Wh_nap = 0.0;
+float cali_von=0;
 unsigned long lastTime = 0;
 WebServer server(80);
-
 void setup() {
   Serial.begin(115200);
   Wire.begin();
@@ -82,7 +82,7 @@ void getpower() {
   {
   float voltage = ina.getBusVoltage();
   float current = ina.getCurrent_mA() / 1000.0;
-  dungluongconlai = String(voltage, 2) + "v";
+  dungluongconlai = String(voltage+cali_von, 2) + "v";
   float power = voltage * current;
   energy_Wh += power * dt / 3600.0;
   ssudung = String(current,2) + "A | " 
@@ -119,6 +119,7 @@ void setupOTA() {
   server.on("/caidat",web_caidat);
   server.on("/savesetting1", HTTP_POST, handleSaveSetting1);
   server.on("/savesetting2", HTTP_POST, handleSaveSetting2);
+  server.on("/savesetting3", HTTP_POST, handleSaveSetting3);
   server.on("/updatefw", updatefw);
   // Thêm router cho yêu cầu dữ liệu
   server.on("/data", handleData);
@@ -295,8 +296,8 @@ void web_caidat() {
   html += "</div></form>";
 
   html += "<form method='POST' action='/savesetting3'><div class='card'>";
-  html += "<h2>Thông số 3</h2>";
-  html += "<input type='text' name='setting3' placeholder='Nhập giá trị...'>";
+  html += "<h2>Hiệu chỉnh vôn</h2>";
+  html += "<input type='text' name='setting3' value='" + String(ina.getBusVoltage()+cali_von) + "'>";
   html += "<input type='submit' value='Lưu'>";
   html += "</div></form>";
 
@@ -318,6 +319,16 @@ void handleSaveSetting2() {
     String value = server.arg("setting2");
     Serial.println("Đã lưu setting2: " + value);
     energy_Wh_nap = value.toFloat();
+    // Lưu vào EEPROM hoặc biến toàn cục nếu cần
+  }
+  server.sendHeader("Location", "/caidat");
+  server.send(303);  // Redirect về trang settings
+}
+void handleSaveSetting3() {
+  if (server.hasArg("setting3")) {
+    String value = server.arg("setting3");
+    Serial.println("Đã lưu setting3: " + value);
+    cali_von = value.toFloat()-ina.getBusVoltage();
     // Lưu vào EEPROM hoặc biến toàn cục nếu cần
   }
   server.sendHeader("Location", "/caidat");
