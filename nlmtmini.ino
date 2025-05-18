@@ -16,6 +16,7 @@ const int BUTTON_DOWN = 4;
 const int BUTTON_SELECT =13;
 const int LED_BUILTIN =2;
 Ticker timer; 
+Ticker timer2; 
 INA226 ina(0x50);
 INA226 ina2(0x51);
 String dungluongconlai;
@@ -62,7 +63,7 @@ void setup() {
 
   setupOTA();
   timer.attach(1.0, getpower);
-  timer.attach(30.0, tatmanhinh);
+  timer2.attach(30.0, tatmanhinh);
 }
 void tatmanhinh()
 {
