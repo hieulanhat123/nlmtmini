@@ -11,7 +11,10 @@
 #define VERSION String(__DATE__) + " " + String(__TIME__)
 #define OLED_RESET    -1 // Reset không cần thiết với I2C
 Adafruit_SSD1306 display(128,64, &Wire, OLED_RESET);
-
+const int BUTTON_UP = 15;
+const int BUTTON_DOWN = 4;
+const int BUTTON_SELECT =13;
+const int LED_BUILTIN =2;
 Ticker timer; 
 INA226 ina(0x50);
 INA226 ina2(0x51);
@@ -27,6 +30,11 @@ WebServer server(80);
 void setup() {
   Serial.begin(115200);
   Wire.begin();
+  //khởi tạo nút
+  pinMode(BUTTON_UP, INPUT_PULLUP);
+  pinMode(BUTTON_DOWN, INPUT_PULLUP);
+  pinMode(BUTTON_SELECT, INPUT_PULLUP);
+  pinMode(LED_BUILTIN, OUTPUT);
   if(ina.begin() )
   {
     ina.setMaxCurrentShunt(30, 0.00215);
@@ -51,8 +59,14 @@ void setup() {
     Serial.println(F("Không tìm thấy màn hình OLED"));
     for (;;); // Dừng tại đây nếu không tìm thấy
   }
+
   setupOTA();
   timer.attach(1.0, getpower);
+  timer.attach(30.0, tatmanhinh);
+}
+void tatmanhinh()
+{
+  display.ssd1306_command(SSD1306_DISPLAYOFF);
 }
 void getpower() {
   
@@ -131,6 +145,27 @@ void setupOTA() {
 }
 void loop() {
   server.handleClient();
+   if (digitalRead(BUTTON_UP) == LOW) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    display.ssd1306_command(SSD1306_DISPLAYON);
+    Serial.println("up");
+    delay(200); // chống rung
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+  if (digitalRead(BUTTON_DOWN) == LOW) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    display.ssd1306_command(SSD1306_DISPLAYON);
+     Serial.println("down");
+    delay(200);
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+  if (digitalRead(BUTTON_SELECT) == LOW) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    display.ssd1306_command(SSD1306_DISPLAYON);
+     Serial.println("select");
+    delay(200);
+    digitalWrite(LED_BUILTIN, LOW);
+  }
   delay(100);
 }
 // Handle OTA update
