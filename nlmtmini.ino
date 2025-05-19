@@ -132,6 +132,7 @@ void getpower() {
   }
  
   hienThiOLED(dungluongconlai,0,0,1);
+  thongbao=cali_von;
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
