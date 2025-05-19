@@ -63,11 +63,20 @@ void setup() {
 
   setupOTA();
   timer.attach(1.0, getpower);
-  timer2.attach(30.0, tatmanhinh);
+  
 }
 void tatmanhinh()
 {
   display.ssd1306_command(SSD1306_DISPLAYOFF);
+}
+void hienThiOLED(String noidung, int x = 0, int y = 0, int size = 1) {
+  display.ssd1306_command(SSD1306_DISPLAYON);
+  display.clearDisplay();
+  display.setTextSize(size);             
+  display.setTextColor(SSD1306_WHITE);  
+  display.setCursor(x, y);              
+  display.println(noidung);
+  display.display();
 }
 void getpower() {
   
@@ -105,13 +114,7 @@ void getpower() {
           + String(energy_Wh_nap,2) + "Wh";
   }
  
-  display.clearDisplay();
-  // Hiển thị chữ
-  display.setTextSize(1);             // Cỡ chữ (1~3)
-  display.setTextColor(SSD1306_WHITE); // Màu chữ
-  display.setCursor(0, 0);      // Vị trí bắt đầu
-  display.println(dungluongconlai);
-  display.display();
+  hienThiOLED(dungluongconlai,0,0,1);
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
@@ -149,22 +152,25 @@ void loop() {
   server.handleClient();
    if (digitalRead(BUTTON_UP) == LOW) {
     digitalWrite(LED_BUILTIN, HIGH);
-    display.ssd1306_command(SSD1306_DISPLAYON);
+    
+    hienThiOLED("Bat auto tat man hinh",0,0,1);
+    timer2.attach(30.0, tatmanhinh);
     Serial.println("up");
     delay(200); // chống rung
     digitalWrite(LED_BUILTIN, LOW);
   }
   if (digitalRead(BUTTON_DOWN) == LOW) {
     digitalWrite(LED_BUILTIN, HIGH);
-    display.ssd1306_command(SSD1306_DISPLAYON);
-     Serial.println("down");
+    hienThiOLED("Tat auto tat man hinh",0,0,1);
+    timer2.detach();
+    Serial.println("down");
     delay(200);
     digitalWrite(LED_BUILTIN, LOW);
   }
   if (digitalRead(BUTTON_SELECT) == LOW) {
     digitalWrite(LED_BUILTIN, HIGH);
     display.ssd1306_command(SSD1306_DISPLAYON);
-     Serial.println("select");
+    Serial.println("select");
     delay(200);
     digitalWrite(LED_BUILTIN, LOW);
   }
