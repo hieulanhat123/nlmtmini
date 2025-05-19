@@ -6,10 +6,12 @@
 #include <Ticker.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <EEPROM.h>
 #define WIFI_SSID "Hieu 2G"
 #define WIFI_PASSWORD ""
 #define VERSION String(__DATE__) + " " + String(__TIME__)
 #define OLED_RESET    -1 // Reset không cần thiết với I2C
+#define EEPROM_SIZE 64
 Adafruit_SSD1306 display(128,64, &Wire, OLED_RESET);
 const int BUTTON_UP = 15;
 const int BUTTON_DOWN = 4;
@@ -29,7 +31,9 @@ float cali_von=0;
 unsigned long lastTime = 0;
 WebServer server(80);
 void setup() {
+
   Serial.begin(115200);
+  cali_von=docFloatEEPROM(0);
   Wire.begin();
   //khởi tạo nút
   pinMode(BUTTON_UP, INPUT_PULLUP);
@@ -68,6 +72,19 @@ void setup() {
 void tatmanhinh()
 {
   display.ssd1306_command(SSD1306_DISPLAYOFF);
+}
+void luufloatEEPROM(float giatri,int vitri) {
+  EEPROM.begin(EEPROM_SIZE);        // bắt đầu EEPROM
+  EEPROM.put(vitri, giatri);          
+  EEPROM.commit();                  // bắt buộc để lưu
+  EEPROM.end();                     // giải phóng
+}
+float docFloatEEPROM(int vitri) {
+  float giatri = 0.0;
+  EEPROM.begin(EEPROM_SIZE);
+  EEPROM.get(vitri, giatri);           
+  EEPROM.end();
+  return giatri;
 }
 void hienThiOLED(String noidung, int x = 0, int y = 0, int size = 1) {
   display.ssd1306_command(SSD1306_DISPLAYON);
@@ -335,6 +352,7 @@ void handleSaveSetting3() {
     String value = server.arg("setting3");
     Serial.println("Đã lưu setting3: " + value);
     cali_von = value.toFloat()-ina.getBusVoltage();
+    luufloatEEPROM(cali_von,0);
     // Lưu vào EEPROM hoặc biến toàn cục nếu cần
   }
   server.sendHeader("Location", "/caidat");
