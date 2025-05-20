@@ -45,7 +45,7 @@ void setup() {
   if(ina2.begin() )
   {
     //ina2.setMaxCurrentShunt(30,0.00193);
-    ina2.configure(0.00193,1.0,-3.0,10000);
+    ina2.configure(0.00193,1.0,-3.0,10066);
     ina2.setAverage(INA226_1024_SAMPLES);
   }
   // Wi-Fi connection setup
