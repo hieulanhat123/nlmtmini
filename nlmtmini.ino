@@ -6,7 +6,6 @@
 #include <Ticker.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <EEPROM.h>
 #define WIFI_SSID "Hieu 2G"
 #define WIFI_PASSWORD ""
 #define VERSION String(__DATE__) + " " + String(__TIME__)
@@ -19,21 +18,19 @@ const int BUTTON_SELECT =13;
 const int LED_BUILTIN =2;
 Ticker timer; 
 Ticker timer2; 
-INA226 ina(0x50);
-INA226 ina2(0x51);
+INA226 ina2(0x40);
+INA226 ina(0x41);
 String dungluongconlai;
 String ssudung;
 String snapvao = "";
 String thongbao="";
 float energy_Wh = 0.0;
 float energy_Wh_nap = 0.0;
-float cali_von=0;
 unsigned long lastTime = 0;
 WebServer server(80);
 void setup() {
 
   Serial.begin(115200);
-  cali_von=docFloatEEPROM(0);
   Wire.begin();
   //khởi tạo nút
   pinMode(BUTTON_UP, INPUT_PULLUP);
@@ -42,12 +39,13 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   if(ina.begin() )
   {
-    ina.setMaxCurrentShunt(30, 0.00215);
+    ina.configure(0.00193,1.0,0,10066);
     ina.setAverage(INA226_1024_SAMPLES);
   }
   if(ina2.begin() )
   {
-    ina2.setMaxCurrentShunt(30, 0.00215);
+    //ina2.setMaxCurrentShunt(30,0.00193);
+    ina2.configure(0.00193,1.0,-3.0,10000);
     ina2.setAverage(INA226_1024_SAMPLES);
   }
   // Wi-Fi connection setup
@@ -72,22 +70,9 @@ void setup() {
 void tatmanhinh()
 {
   display.ssd1306_command(SSD1306_DISPLAYOFF);
-}
-void luufloatEEPROM(float giatri,int vitri) {
-  EEPROM.begin(EEPROM_SIZE);        // bắt đầu EEPROM
-  EEPROM.put(vitri, giatri);          
-  EEPROM.commit();                  // bắt buộc để lưu
-  EEPROM.end();                     // giải phóng
-}
-float docFloatEEPROM(int vitri) {
-  float giatri = 0.0;
-  EEPROM.begin(EEPROM_SIZE);
-  EEPROM.get(vitri, giatri);           
-  EEPROM.end();
-  return giatri;
+  timer2.detach();
 }
 void hienThiOLED(String noidung, int x = 0, int y = 0, int size = 1) {
-  display.clearDisplay();
   display.setTextSize(size);             
   display.setTextColor(SSD1306_WHITE);  
   display.setCursor(x, y);              
@@ -107,7 +92,7 @@ void getpower() {
   {
   float voltage = ina.getBusVoltage();
   float current = ina.getCurrent_mA() / 1000.0;
-  dungluongconlai = String(voltage+cali_von, 2) + "v";
+  dungluongconlai = String(voltage, 2) + "v";
   float power = voltage * current;
   energy_Wh += power * dt / 3600.0;
   ssudung = String(current,2) + "A | " 
@@ -129,9 +114,11 @@ void getpower() {
           + String(powernap,2) + "W | "
           + String(energy_Wh_nap,2) + "Wh";
   }
- 
+  display.clearDisplay();
   hienThiOLED(dungluongconlai,0,0,1);
-  thongbao=cali_von;
+  hienThiOLED(snapvao,0,8,1);
+  hienThiOLED(ssudung,0,24,1);
+  thongbao=String(voltage, 2)+"|"+String(voltagenap, 2);
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
@@ -170,6 +157,7 @@ void loop() {
    if (digitalRead(BUTTON_UP) == LOW) {
     digitalWrite(LED_BUILTIN, HIGH);
     display.ssd1306_command(SSD1306_DISPLAYON);
+    timer2.attach(30.0, tatmanhinh);
     Serial.println("up");
     delay(200); // chống rung
     digitalWrite(LED_BUILTIN, LOW);
@@ -177,6 +165,7 @@ void loop() {
   if (digitalRead(BUTTON_DOWN) == LOW) {
     digitalWrite(LED_BUILTIN, HIGH);
     display.ssd1306_command(SSD1306_DISPLAYON);
+    timer2.attach(30.0, tatmanhinh);
     Serial.println("down");
     delay(200);
     digitalWrite(LED_BUILTIN, LOW);
@@ -184,6 +173,7 @@ void loop() {
   if (digitalRead(BUTTON_SELECT) == LOW) {
     digitalWrite(LED_BUILTIN, HIGH);
     display.ssd1306_command(SSD1306_DISPLAYON);
+    timer2.attach(30.0, tatmanhinh);
     Serial.println("select");
     delay(200);
     digitalWrite(LED_BUILTIN, LOW);
@@ -317,7 +307,7 @@ void web_caidat() {
 
   html += "<form method='POST' action='/savesetting3'><div class='card'>";
   html += "<h2>Hiệu chỉnh vôn</h2>";
-  html += "<input type='text' name='setting3' value='" + String(ina.getBusVoltage()+cali_von) + "'>";
+  html += "<input type='text' name='setting3' value='" + String(ina.getBusVoltage()) + "'>";
   html += "<input type='submit' value='Lưu'>";
   html += "</div></form>";
 
@@ -348,9 +338,6 @@ void handleSaveSetting3() {
   if (server.hasArg("setting3")) {
     String value = server.arg("setting3");
     Serial.println("Đã lưu setting3: " + value);
-    cali_von = value.toFloat()-ina.getBusVoltage();
-    luufloatEEPROM(cali_von,0);
-    // Lưu vào EEPROM hoặc biến toàn cục nếu cần
   }
   server.sendHeader("Location", "/caidat");
   server.send(303);  // Redirect về trang settings
