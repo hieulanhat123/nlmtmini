@@ -111,7 +111,8 @@ void getpower() {
   {
   float voltage = ina.getBusVoltage();
   float current = ina.getCurrent_mA() / 1000.0;
-  dungluongconlai = String(voltage, 2) + "v";
+  float batteryPercent = (voltage - 11.0) / (12.8 - 11.0) * 100.0;
+  dungluongconlai =String(batteryPercent,0)+"% | "+ String(voltage, 2) + "v";
   float power = voltage * current;
   energy_Wh += power * dt / 3600.0;
   ssudung = String(current,2) + "A | " 
