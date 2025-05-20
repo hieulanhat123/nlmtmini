@@ -39,11 +39,13 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   if(ina.begin() )
   {
+    ina.reset();
     ina.configure(0.00193,1.0,0,10066);
     ina.setAverage(INA226_1024_SAMPLES);
   }
   if(ina2.begin() )
   {
+    ina2.reset();
     //ina2.setMaxCurrentShunt(30,0.00193);
     ina2.configure(0.00193,1.0,-3.0,10066);
     ina2.setAverage(INA226_1024_SAMPLES);
