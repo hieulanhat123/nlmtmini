@@ -18,16 +18,20 @@ const int BUTTON_SELECT =13;
 const int LED_BUILTIN =2;
 Ticker timer; 
 Ticker timer2; 
-INA226 ina2(0x40);
+INA226 ina2(0x40); //ina nap
 INA226 ina(0x41);
 String dungluongconlai;
 String ssudung;
 String snapvao = "";
 String thongbao="";
+bool dareset=false;
 float energy_Wh = 0.0;
 float energy_Wh_nap = 0.0;
+float dongnapmax=0;
+float watnapmax=0;
 unsigned long lastTime = 0;
 WebServer server(80);
+
 void setup() {
 
   Serial.begin(115200);
@@ -46,8 +50,7 @@ void setup() {
   if(ina2.begin() )
   {
     ina2.reset();
-    //ina2.setMaxCurrentShunt(30,0.00193);
-    ina2.configure(0.00193,1.0,-3.0,10066);
+    ina2.configure(0.00193,1.0,-4.0,10066);
     ina2.setAverage(INA226_1024_SAMPLES);
   }
   // Wi-Fi connection setup
@@ -67,10 +70,24 @@ void setup() {
 
   setupOTA();
   timer.attach(1.0, getpower);
-  timer2.attach(30.0, tatmanhinh);
+  timer2.attach(60.0, tatmanhinh);
 }
 void tatmanhinh()
 {
+  if (ina2.begin()) {
+  float currentnap = ina2.getCurrent_mA();  // mA
+  if (currentnap > 20.0) {
+    if (!dareset) {
+      energy_Wh = 0;
+      energy_Wh_nap = 0;
+      dongnapmax=0;
+      watnapmax=0;
+      dareset = true;
+    }
+  }
+  else
+    dareset = false;
+}
   display.ssd1306_command(SSD1306_DISPLAYOFF);
   timer2.detach();
 }
@@ -93,7 +110,6 @@ void getpower() {
   else
   {
   float voltage = ina.getBusVoltage();
-  thongbao+=String(voltage, 2);
   float current = ina.getCurrent_mA() / 1000.0;
   dungluongconlai = String(voltage, 2) + "v";
   float power = voltage * current;
@@ -109,9 +125,12 @@ void getpower() {
   else
   {
   float voltagenap = ina2.getBusVoltage();
-  thongbao+="|"+String(voltagenap, 2);
   float currentnap = ina2.getCurrent_mA() / 1000.0;
-   float powernap = voltagenap * currentnap;
+  if(ina2.getCurrent_mA()<10)currentnap=0.0;
+  float powernap = voltagenap * currentnap;
+  if(dongnapmax<currentnap)dongnapmax=currentnap;
+  if(watnapmax<powernap)watnapmax=powernap;
+  thongbao="Dòng max:"+String(dongnapmax,2)+"A;Công suất max:"+String(watnapmax,0)+"w;";
   energy_Wh_nap += powernap * dt / 3600.0;
   // Cập nhật chuỗi hiển thị
   snapvao = String(currentnap,2) + "A | " 
@@ -232,7 +251,7 @@ void handleRoot() {
   html += "      document.getElementById('thongbao').innerText = data.thongbao;";
   html += "    });";
   html += "}";
-  html += "setInterval(fetchData, 1000);";
+  html += "setInterval(fetchData, 2000);";
   html += "</script>";
   html += "</head><body>";
   html += "<header><h1>Hệ thống MLMT mini 12V</h1></header>";
