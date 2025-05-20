@@ -80,7 +80,7 @@ void hienThiOLED(String noidung, int x = 0, int y = 0, int size = 1) {
   display.display();
 }
 void getpower() {
-  
+  thongbao="";
   unsigned long now = millis();
   float dt = (now - lastTime) / 1000.0;  // thời gian delta (giây)
   lastTime = now;
@@ -91,6 +91,7 @@ void getpower() {
   else
   {
   float voltage = ina.getBusVoltage();
+  thongbao+=String(voltage, 2);
   float current = ina.getCurrent_mA() / 1000.0;
   dungluongconlai = String(voltage, 2) + "v";
   float power = voltage * current;
@@ -106,6 +107,7 @@ void getpower() {
   else
   {
   float voltagenap = ina2.getBusVoltage();
+  thongbao+="|"+String(voltagenap, 2);
   float currentnap = ina2.getCurrent_mA() / 1000.0;
    float powernap = voltagenap * currentnap;
   energy_Wh_nap += powernap * dt / 3600.0;
@@ -118,7 +120,6 @@ void getpower() {
   hienThiOLED(dungluongconlai,0,0,1);
   hienThiOLED(snapvao,0,8,1);
   hienThiOLED(ssudung,0,24,1);
-  thongbao=String(voltage, 2)+"|"+String(voltagenap, 2);
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
