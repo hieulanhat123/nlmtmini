@@ -140,8 +140,8 @@ void getpower() {
   }
   display.clearDisplay();
   hienThiOLED(dungluongconlai,0,0,1);
-  hienThiOLED(snapvao,0,8,1);
-  hienThiOLED(ssudung,0,24,1);
+  hienThiOLED(snapvao,0,16,1);
+  hienThiOLED(ssudung,0,32,1);
 }
 void setupOTA() {
   // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
