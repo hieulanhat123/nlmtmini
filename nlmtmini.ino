@@ -31,7 +31,6 @@ float dongnapmax=0;
 float watnapmax=0;
 unsigned long lastTime = 0;
 WebServer server(80);
-
 void setup() {
 
   Serial.begin(115200);
@@ -63,7 +62,7 @@ void setup() {
     Serial.println("Connected to Wi-Fi IP:"+WiFi.localIP().toString());
   }
     // Khởi tạo màn hình
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Địa chỉ I2C có thể là 0x3C hoặc 0x3D
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println(F("Không tìm thấy màn hình OLED"));
     for (;;); // Dừng tại đây nếu không tìm thấy
   }
@@ -75,14 +74,14 @@ void setup() {
 void tatmanhinh()
 {
   if (ina2.begin()) {
-  float currentnap = ina2.getCurrent_mA();  // mA
+  float currentnap = ina2.getCurrent_mA();
   if (currentnap > 20.0) {
     if (!dareset) {
+      dareset = true;
       energy_Wh = 0;
       energy_Wh_nap = 0;
       dongnapmax=0;
       watnapmax=0;
-      dareset = true;
     }
   }
   else
@@ -112,7 +111,7 @@ void getpower() {
   float voltage = ina.getBusVoltage();
   float current = ina.getCurrent_mA() / 1000.0;
   float batteryPercent = (voltage - 11.0) / (12.8 - 11.0) * 100.0;
-  dungluongconlai =String(batteryPercent,0)+"% | "+ String(voltage, 2) + "v";
+  dungluongconlai =String(batteryPercent,0)+"% | "+ String(voltage, 2) + "v | "+String(energy_Wh_nap-energy_Wh,2)+"Wh";
   float power = voltage * current;
   energy_Wh += power * dt / 3600.0;
   ssudung = String(current,2) + "A | " 
