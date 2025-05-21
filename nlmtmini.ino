@@ -24,7 +24,7 @@ String dungluongconlai;
 String ssudung;
 String snapvao = "";
 String thongbao="";
-bool dareset=false;
+bool dareset=true;
 float energy_Wh = 0.0;
 float energy_Wh_nap = 0.0;
 float dongnapmax=0;
@@ -111,6 +111,7 @@ void getpower() {
   float voltage = ina.getBusVoltage();
   float current = ina.getCurrent_mA() / 1000.0;
   float batteryPercent = (voltage - 11.0) / (12.8 - 11.0) * 100.0;
+  if(batteryPercent>100.0)batteryPercent=100;
   dungluongconlai =String(batteryPercent,0)+"% | "+ String(voltage, 2) + "v | "+String(energy_Wh_nap-energy_Wh,2)+"Wh";
   float power = voltage * current;
   energy_Wh += power * dt / 3600.0;
