@@ -43,7 +43,7 @@ void setup() {
   if(ina.begin() )
   {
     ina.reset();
-    ina.configure(0.00193,1.0,0,10066);
+    ina.configure(0.00242,1.0,5.0,10066);
     ina.setAverage(INA226_1024_SAMPLES);
   }
   if(ina2.begin() )
@@ -115,7 +115,7 @@ void getpower() {
   dungluongconlai =String(batteryPercent,0)+"% | "+ String(voltage, 2) + "v | "+String(energy_Wh_nap-energy_Wh,2)+"Wh";
   float power = voltage * current;
   energy_Wh += power * dt / 3600.0;
-  ssudung = String(current,2) + "A | " 
+  ssudung = String(current,3) + "A | " 
           + String(power,2) + "W | " 
           + String(energy_Wh,2) + "Wh"; 
   }
@@ -134,7 +134,7 @@ void getpower() {
   thongbao="Dòng max:"+String(dongnapmax,2)+"A;Công suất max:"+String(watnapmax,0)+"w;";
   energy_Wh_nap += powernap * dt / 3600.0;
   // Cập nhật chuỗi hiển thị
-  snapvao = String(currentnap,2) + "A | " 
+  snapvao = String(currentnap,3) + "A | " 
           + String(powernap,2) + "W | "
           + String(energy_Wh_nap,2) + "Wh";
   }
