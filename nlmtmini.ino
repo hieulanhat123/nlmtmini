@@ -10,7 +10,6 @@
 #define WIFI_PASSWORD ""
 #define VERSION String(__DATE__) + " " + String(__TIME__)
 #define OLED_RESET    -1 // Reset không cần thiết với I2C
-#define EEPROM_SIZE 64
 Adafruit_SSD1306 display(128,64, &Wire, OLED_RESET);
 const int BUTTON_UP = 15;
 const int BUTTON_DOWN = 4;
@@ -342,7 +341,6 @@ void handleSaveSetting1() {
     String value = server.arg("setting1");
     Serial.println("Đã lưu setting1: " + value);
     energy_Wh = value.toFloat();
-    // Lưu vào EEPROM hoặc biến toàn cục nếu cần
   }
   server.sendHeader("Location", "/caidat");
   server.send(303);  // Redirect về trang settings
@@ -352,7 +350,6 @@ void handleSaveSetting2() {
     String value = server.arg("setting2");
     Serial.println("Đã lưu setting2: " + value);
     energy_Wh_nap = value.toFloat();
-    // Lưu vào EEPROM hoặc biến toàn cục nếu cần
   }
   server.sendHeader("Location", "/caidat");
   server.send(303);  // Redirect về trang settings
