@@ -117,9 +117,8 @@ void getpower() {
   thongbao+="Điện áp nạp:"+String(voltagenap,3)+";";
   thongbao+="Dòng nạp:"+String(currentnap,3)+";";
   thongbao+="trạng thái chờ reset:"+String(choreset)+";";
-  if(currentnap<0.02 and currentnap>-0.02)
+  if(currentnap<0.01)
   {
-    currentnap=0.0;
     choreset = true;
   }
   else 
