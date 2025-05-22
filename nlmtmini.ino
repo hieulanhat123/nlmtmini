@@ -23,7 +23,7 @@ String dungluongconlai;
 String ssudung;
 String snapvao = "";
 String thongbao="";
-bool dareset=true;
+bool choreset=false;
 float energy_Wh = 0.0;
 float energy_Wh_nap = 0.0;
 float dongnapmax=0;
@@ -72,20 +72,6 @@ void setup() {
 }
 void tatmanhinh()
 {
-  if (ina2.begin()) {
-  float currentnap = ina2.getCurrent_mA();
-  if (currentnap > 20.0) {
-    if (!dareset) {
-      dareset = true;
-      energy_Wh = 0;
-      energy_Wh_nap = 0;
-      dongnapmax=0;
-      watnapmax=0;
-    }
-  }
-  else
-    dareset = false;
-}
   display.ssd1306_command(SSD1306_DISPLAYOFF);
   timer2.detach();
 }
@@ -126,7 +112,22 @@ void getpower() {
   {
   float voltagenap = ina2.getBusVoltage();
   float currentnap = ina2.getCurrent_mA() / 1000.0;
-  if(ina2.getCurrent_mA()<10 and ina2.getCurrent_mA()>-10)currentnap=0.0;
+  if(currentnap<0.02 and currentnap>-0.02)
+  {
+    currentnap=0.0;
+    choreset = true;
+  }
+  else 
+  {
+    //reset ngày mới
+    if (choreset) {
+      choreset = false;
+      energy_Wh = 0;
+      energy_Wh_nap = 0;
+      dongnapmax=0;
+      watnapmax=0;
+    }
+  }
   float powernap = voltagenap * currentnap;
   if(dongnapmax<currentnap)dongnapmax=currentnap;
   if(watnapmax<powernap)watnapmax=powernap;
