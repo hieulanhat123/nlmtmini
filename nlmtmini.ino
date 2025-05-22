@@ -112,7 +112,7 @@ void getpower() {
   {
   float voltagenap = ina2.getBusVoltage();
   float currentnap = ina2.getCurrent_mA() / 1000.0;
-  if(currentnap<0.01 and currentnap>-0.1)
+  if(currentnap<0.01)
   {
     currentnap=0.0;
     choreset = true;
