@@ -23,11 +23,12 @@ String dungluongconlai;
 String ssudung;
 String snapvao = "";
 String thongbao="";
-bool choreset=false;
 float energy_Wh = 0.0;
 float energy_Wh_nap = 0.0;
 float dongnapmax=0;
 float watnapmax=0;
+int demsolancbireset=0;
+bool canReset = false;
 unsigned long lastTime = 0;
 WebServer server(80);
 void setup() {
@@ -82,6 +83,32 @@ void hienThiOLED(String noidung, int x = 0, int y = 0, int size = 1) {
   display.println(noidung);
   display.display();
 }
+void kiemTraResetNgayMoi(float currentnap) {
+  if (currentnap < 0.01) {
+    if (demsolancbireset < 1000) {
+      demsolancbireset++;
+    }
+
+    if (demsolancbireset >= 1000) {
+      canReset = true;  // Đánh dấu đã sẵn sàng reset khi có nạp lại
+    }
+  } else {
+    if (canReset) {
+      // Dòng nạp đã quay lại sau khi đã "ngưng nạp" → reset ngày mới
+      energy_Wh = 0;
+      energy_Wh_nap = 0;
+      dongnapmax = 0;
+      watnapmax = 0;
+
+      // Reset lại cờ và bộ đếm
+      canReset = false;
+      demsolancbireset = 0;
+    } else {
+      // Nếu chưa đạt điều kiện chờ reset thì cứ reset đếm
+      demsolancbireset = 0;
+    }
+  }
+}
 void getpower() {
   thongbao="";
   unsigned long now = millis();
@@ -116,26 +143,13 @@ void getpower() {
   float currentnap = ina2.getCurrent_mA() / 1000.0;
   thongbao+="Điện áp nạp:"+String(voltagenap,3)+";";
   thongbao+="Dòng nạp:"+String(currentnap,3)+";";
-  thongbao+="trạng thái chờ reset:"+String(choreset)+";";
-  if(currentnap<0.01)
-  {
-    choreset = true;
-  }
-  else 
-  {
-    //reset ngày mới
-    if (choreset) {
-      choreset = false;
-      energy_Wh = 0;
-      energy_Wh_nap = 0;
-      dongnapmax=0;
-      watnapmax=0;
-    }
-  }
+  kiemTraResetNgayMoi(currentnap);
   float powernap = voltagenap * currentnap;
   if(dongnapmax<currentnap)dongnapmax=currentnap;
   if(watnapmax<powernap)watnapmax=powernap;
   thongbao+="Dòng max:"+String(dongnapmax,2)+"A;Công suất max:"+String(watnapmax,0)+"w;";
+  thongbao+="Đếm số lần cbi reset:"+String(demsolancbireset)+";";
+  thongbao+="Có thể reset:"+String(canReset)+";";
   energy_Wh_nap += powernap * dt / 3600.0;
   // Cập nhật chuỗi hiển thị
   snapvao = String(currentnap,2) + "A | " 
