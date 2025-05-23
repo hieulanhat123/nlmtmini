@@ -44,13 +44,13 @@ void setup() {
   {
     ina.reset();
     ina.configure(0.00242,1.0,5.0,10066);
-    ina.setAverage(INA226_1024_SAMPLES);
+    ina.setAverage(INA226_512_SAMPLES);
   }
   if(ina2.begin() )
   {
     ina2.reset();
     ina2.configure(0.00193,1.0,-4.0,10066);
-    ina2.setAverage(INA226_1024_SAMPLES);
+    ina2.setAverage(INA226_512_SAMPLES);
   }
   // Wi-Fi connection setup
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -122,8 +122,8 @@ void getpower() {
   {
   float voltage = ina.getBusVoltage();
   float current = ina.getCurrent_mA() / 1000.0;
-  thongbao+="Điện áp sử dụng:"+String(voltage,3)+";";
-  thongbao+="Dòng sử dụng:"+String(current,3)+";";
+  thongbao+="Điện áp sử dụng:"+String(voltage,3)+"\\n";
+  thongbao+="Dòng sử dụng:"+String(current,3)+"\\n";
   float batteryPercent = (voltage - 11.0) / (12.8 - 11.0) * 100.0;
   if(batteryPercent>100.0)batteryPercent=100;
   dungluongconlai =String(batteryPercent,0)+"% | "+ String(voltage, 2) + "v | "+String(energy_Wh_nap-energy_Wh,2)+"Wh";
@@ -141,15 +141,15 @@ void getpower() {
   {
   float voltagenap = ina2.getBusVoltage();
   float currentnap = ina2.getCurrent_mA() / 1000.0;
-  thongbao+="Điện áp nạp:"+String(voltagenap,3)+";";
-  thongbao+="Dòng nạp:"+String(currentnap,3)+";";
+  thongbao+="Điện áp nạp:"+String(voltagenap,3)+"\\n";
+  thongbao+="Dòng nạp:"+String(currentnap,3)+"\\n";
   kiemTraResetNgayMoi(currentnap);
   float powernap = voltagenap * currentnap;
   if(dongnapmax<currentnap)dongnapmax=currentnap;
   if(watnapmax<powernap)watnapmax=powernap;
-  thongbao+="Dòng max:"+String(dongnapmax,2)+"A;Công suất max:"+String(watnapmax,0)+"w;";
-  thongbao+="Đếm số lần cbi reset:"+String(demsolancbireset)+";";
-  thongbao+="Có thể reset:"+String(canReset)+";";
+  thongbao+="Dòng max:"+String(dongnapmax,2)+"A;\\nCông suất max:"+String(watnapmax,0)+"w\\n";
+  thongbao+="Đếm số lần cbi reset:"+String(demsolancbireset)+"\\n";
+  thongbao+="Có thể reset:"+String(canReset)+"\\n";
   energy_Wh_nap += powernap * dt / 3600.0;
   // Cập nhật chuỗi hiển thị
   snapvao = String(currentnap,2) + "A | " 
@@ -270,7 +270,7 @@ void handleRoot() {
   html += "      document.getElementById('thongbao').innerText = data.thongbao;";
   html += "    });";
   html += "}";
-  html += "setInterval(fetchData, 2000);";
+  html += "setInterval(fetchData, 1000);";
   html += "</script>";
   html += "</head><body>";
   html += "<header><h1>Hệ thống MLMT mini 12V</h1></header>";
@@ -278,7 +278,7 @@ void handleRoot() {
   html += "<div class='card'><h2>Dung lượng còn lại</h2><div class='value' id='dungluongconlai'>Loading</div></div>";
   html += "<div class='card'><h2>Nạp vào</h2><div class='value' id='snapvao'>Loading</div></div>";
   html += "<div class='card'><h2>Sử dụng</h2><div class='value' id='ssudung'>Loading</div></div>";
-  html += "<div class='card'><h2>Thông báo</h2><div class='value' id='thongbao'>Loading</div></div>";
+html += "<div class='card'><h2>Thông báo</h2><div class='value' id='thongbao' style='white-space: pre-line;'>Loading</div></div>";
   html += "<form action='/caidat' method='GET'><input type='submit' value='Cài đặt'></form>";
   html += "<form action='/updatefw' method='GET'><input type='submit' value='Cập nhật Firmware'></form>";
   html += "<footer>";
