@@ -64,7 +64,7 @@ void setup() {
     // Khởi tạo màn hình
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println(F("Không tìm thấy màn hình OLED"));
-    for (;;); // Dừng tại đây nếu không tìm thấy
+    for (;;);
   }
 
   setupOTA();
@@ -90,21 +90,17 @@ void kiemTraResetNgayMoi(float currentnap) {
     }
 
     if (demsolancbireset >= 1000) {
-      canReset = true;  // Đánh dấu đã sẵn sàng reset khi có nạp lại
+      canReset = true;
     }
   } else {
     if (canReset) {
-      // Dòng nạp đã quay lại sau khi đã "ngưng nạp" → reset ngày mới
       energy_Wh = 0;
       energy_Wh_nap = 0;
       dongnapmax = 0;
       watnapmax = 0;
-
-      // Reset lại cờ và bộ đếm
       canReset = false;
       demsolancbireset = 0;
     } else {
-      // Nếu chưa đạt điều kiện chờ reset thì cứ reset đếm
       demsolancbireset = 0;
     }
   }
@@ -112,7 +108,7 @@ void kiemTraResetNgayMoi(float currentnap) {
 void getpower() {
   thongbao="";
   unsigned long now = millis();
-  float dt = (now - lastTime) / 1000.0;  // thời gian delta (giây)
+  float dt = (now - lastTime) / 1000.0;
   lastTime = now;
   if(!ina.begin() )
   {
@@ -162,18 +158,13 @@ void getpower() {
   hienThiOLED(ssudung,0,32,1);
 }
 void setupOTA() {
-  // Trang gốc với biểu mẫu OTA và biểu mẫu Khởi động lại
   server.on("/", handleRoot);
   server.on("/caidat",web_caidat);
   server.on("/savesetting1", HTTP_POST, handleSaveSetting1);
   server.on("/savesetting2", HTTP_POST, handleSaveSetting2);
-  server.on("/savesetting3", HTTP_POST, handleSaveSetting3);
   server.on("/updatefw", updatefw);
-  // Thêm router cho yêu cầu dữ liệu
   server.on("/data", handleData);
-  // Xử lý OTA trên /update
   server.on("/update", HTTP_POST, []() {
-  // Sau khi upload xong, ở đây phản hồi cho client
   String html = "<html><head>";
   html += "<meta http-equiv='refresh' content='3;url=/'>";
   html += "</head><body>";
@@ -184,38 +175,20 @@ void setupOTA() {
   delay(2000);
   ESP.restart();
 }, handleUpdate);
-  // Tuyến đường cho việc khởi động lại ESP32
   server.on("/reboot", HTTP_POST, []() {
     server.send(200, "text/plain;charset=UTF-8", "Đang khởi động lại...");
-    delay(1000); // Đợi một giây để cho phép tin nhắn được gửi
-    ESP.restart(); // Khởi động lại ESP32
+    delay(1000);
+    ESP.restart();
   });
   server.begin();
   Serial.println("Máy chủ OTA HTTP đã bắt đầu.");
 }
 void loop() {
   server.handleClient();
-   if (digitalRead(BUTTON_UP) == LOW) {
+   if (digitalRead(BUTTON_UP) == LOW or digitalRead(BUTTON_DOWN) == LOW or digitalRead(BUTTON_SELECT) == LOW) {
     digitalWrite(LED_BUILTIN, HIGH);
     display.ssd1306_command(SSD1306_DISPLAYON);
     timer2.attach(30.0, tatmanhinh);
-    Serial.println("up");
-    delay(200); // chống rung
-    digitalWrite(LED_BUILTIN, LOW);
-  }
-  if (digitalRead(BUTTON_DOWN) == LOW) {
-    digitalWrite(LED_BUILTIN, HIGH);
-    display.ssd1306_command(SSD1306_DISPLAYON);
-    timer2.attach(30.0, tatmanhinh);
-    Serial.println("down");
-    delay(200);
-    digitalWrite(LED_BUILTIN, LOW);
-  }
-  if (digitalRead(BUTTON_SELECT) == LOW) {
-    digitalWrite(LED_BUILTIN, HIGH);
-    display.ssd1306_command(SSD1306_DISPLAYON);
-    timer2.attach(30.0, tatmanhinh);
-    Serial.println("select");
     delay(200);
     digitalWrite(LED_BUILTIN, LOW);
   }
@@ -236,7 +209,6 @@ void handleUpdate() {
   } else if (upload.status == UPLOAD_FILE_END) {
     if (Update.end(true)) {
       Serial.printf("Update: Successfully uploaded %u bytes\n", upload.totalSize);
-      // KHÔNG server.send() ở đây nữa!
     } else {
       Update.printError(Serial);
     }
@@ -270,7 +242,7 @@ void handleRoot() {
   html += "      document.getElementById('thongbao').innerText = data.thongbao;";
   html += "    });";
   html += "}";
-  html += "setInterval(fetchData, 1000);";
+  html += "setInterval(fetchData, 2000);";
   html += "</script>";
   html += "</head><body>";
   html += "<header><h1>Hệ thống MLMT mini 12V</h1></header>";
@@ -302,14 +274,14 @@ void updatefw() {
   String html = "<html><head>";html += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"; // Thiết lập viewport cho responsive
   html += "<style>";
   html += "body { font-family: Arial, sans-serif; display: flex; justify-content: flex-start; align-items: center; height: 100vh; flex-direction: column; text-align: center; padding: 20px; }"; // Canh giữa nội dung
-  html += "h1 { margin: 0; font-size: 2em; }"; // Kích thước tiêu đề
-  html += "form { margin: 20px 0; }"; // Khoảng cách giữa các form
+  html += "h1 { margin: 0; font-size: 2em; }";
+  html += "form { margin: 20px 0; }";
   html += "</style>";
   html += "</head><body>";
-  html += "<h1>Cập nhật phần mềm</h1>"; // Tiêu đề
+  html += "<h1>Cập nhật phần mềm</h1>";
   html += "<form method='POST' action='/update' enctype='multipart/form-data'>"; // Form cho việc tải lên file
-  html += "<input type='file' name='update'>"; // Input file
-  html += "<input type='submit' value='Cập nhật'>"; // Nút gửi cho cập nhật
+  html += "<input type='file' name='update'>";
+  html += "<input type='submit' value='Cập nhật'>";
   html += "</form>";
   html += "</body></html>";
   server.send(200, "text/html; charset=UTF-8", html);
@@ -346,12 +318,6 @@ void web_caidat() {
   html += "<input type='submit' value='Lưu'>";
   html += "</div></form>";
 
-  html += "<form method='POST' action='/savesetting3'><div class='card'>";
-  html += "<h2>Hiệu chỉnh vôn</h2>";
-  html += "<input type='text' name='setting3' value='" + String(ina.getBusVoltage()) + "'>";
-  html += "<input type='submit' value='Lưu'>";
-  html += "</div></form>";
-
   html += "</main></body></html>";
   server.send(200, "text/html; charset=UTF-8", html);
 }
@@ -362,21 +328,13 @@ void handleSaveSetting1() {
     energy_Wh = value.toFloat();
   }
   server.sendHeader("Location", "/caidat");
-  server.send(303);  // Redirect về trang settings
+  server.send(303);
 }
 void handleSaveSetting2() {
   if (server.hasArg("setting2")) {
     String value = server.arg("setting2");
     Serial.println("Đã lưu setting2: " + value);
     energy_Wh_nap = value.toFloat();
-  }
-  server.sendHeader("Location", "/caidat");
-  server.send(303);  // Redirect về trang settings
-}
-void handleSaveSetting3() {
-  if (server.hasArg("setting3")) {
-    String value = server.arg("setting3");
-    Serial.println("Đã lưu setting3: " + value);
   }
   server.sendHeader("Location", "/caidat");
   server.send(303);  // Redirect về trang settings
