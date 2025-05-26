@@ -118,8 +118,8 @@ void getpower() {
   {
   float voltage = ina.getBusVoltage();
   float current = ina.getCurrent_mA() / 1000.0;
-  thongbao+="Điện áp sử dụng:"+String(voltage,3)+"\\n";
-  thongbao+="Dòng sử dụng:"+String(current,3)+"\\n";
+  thongbao+="Điện áp sử dụng:"+String(voltage,3)+"v\\n";
+  thongbao+="Dòng sử dụng:"+String(current,3)+"A\\n";
   float batteryPercent = (voltage - 11.0) / (12.8 - 11.0) * 100.0;
   if(batteryPercent>100.0)batteryPercent=100;
   dungluongconlai =String(batteryPercent,0)+"% | "+ String(voltage, 2) + "v | "+String(energy_Wh_nap-energy_Wh,2)+"Wh";
@@ -137,8 +137,8 @@ void getpower() {
   {
   float voltagenap = ina2.getBusVoltage();
   float currentnap = ina2.getCurrent_mA() / 1000.0;
-  thongbao+="Điện áp nạp:"+String(voltagenap,3)+"\\n";
-  thongbao+="Dòng nạp:"+String(currentnap,3)+"\\n";
+  thongbao+="Điện áp nạp:"+String(voltagenap,3)+"v\\n";
+  thongbao+="Dòng nạp:"+String(currentnap,3)+"A\\n";
   kiemTraResetNgayMoi(currentnap);
   float powernap = voltagenap * currentnap;
   if(dongnapmax<currentnap)dongnapmax=currentnap;
