@@ -85,11 +85,11 @@ void hienThiOLED(String noidung, int x = 0, int y = 0, int size = 1) {
 }
 void kiemTraResetNgayMoi(float currentnap) {
   if (currentnap < 0.01) {
-    if (demsolancbireset < 1000) {
+    if (demsolancbireset < 3600) {
       demsolancbireset++;
     }
 
-    if (demsolancbireset >= 1000) {
+    if (demsolancbireset >= 3600) {
       canReset = true;
     }
   } else {
