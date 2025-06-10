@@ -122,9 +122,9 @@ void getpower() {
   thongbao+="Dòng sử dụng:"+String(current,3)+"A\\n";
   float batteryPercent = (voltage - 11.0) / (12.8 - 11.0) * 100.0;
   if(batteryPercent>100.0)batteryPercent=100;
-  dungluongconlai =String(batteryPercent,0)+"% | "+ String(voltage, 2) + "v | "+String(energy_Wh_nap-energy_Wh,2)+"Wh";
   float power = voltage * current;
   energy_Wh += power * dt / 3600.0;
+  dungluongconlai =String(batteryPercent,0)+"% | "+ String(voltage, 2) + "v | "+String(energy_Wh_nap-energy_Wh,2)+"Wh | "+String((energy_Wh_nap-energy_Wh)/power,1)+"h";
   ssudung = String(current,2) + "A | " 
           + String(power,2) + "W | " 
           + String(energy_Wh,2) + "Wh"; 
