@@ -120,7 +120,7 @@ void getpower() {
   float current = ina.getCurrent_mA() / 1000.0;
   thongbao+="Điện áp sử dụng:"+String(voltage,3)+"v\\n";
   thongbao+="Dòng sử dụng:"+String(current,3)+"A\\n";
-  float batteryPercent = (voltage - 11.0) / (12.8 - 11.0) * 100.0;
+  float batteryPercent = (voltage - 11.0) / (12.6 - 11.0) * 100.0;
   if(batteryPercent>100.0)batteryPercent=100;
   float power = voltage * current;
   energy_Wh += power * dt / 3600.0;
