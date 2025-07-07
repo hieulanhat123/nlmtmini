@@ -23,6 +23,8 @@ String dungluongconlai;
 String ssudung;
 String snapvao = "";
 String thongbao="";
+String old_snapvao="";
+String old_ssudung="";
 float energy_Wh = 0.0;
 float energy_Wh_nap = 0.0;
 float dongnapmax=0;
@@ -94,12 +96,15 @@ void kiemTraResetNgayMoi(float currentnap) {
     }
   } else {
     if (canReset) {
+      canReset = false;
       energy_Wh = 0;
       energy_Wh_nap = 0;
       dongnapmax = 0;
       watnapmax = 0;
-      canReset = false;
+      old_snapvao=snapvao;
+      old_ssudung=ssudung;
       demsolancbireset = 0;
+
     } else {
       demsolancbireset = 0;
     }
@@ -146,6 +151,8 @@ void getpower() {
   thongbao+="Dòng max:"+String(dongnapmax,2)+"A;\\nCông suất max:"+String(watnapmax,0)+"w\\n";
   thongbao+="Đếm số lần cbi reset:"+String(demsolancbireset)+"\\n";
   thongbao+="Có thể reset:"+String(canReset)+"\\n";
+  thongbao+="Nạp cũ:"+old_snapvao+"\\n";
+  thongbao+="Sử dụng cũ:"+old_ssudung+"\\n";
   energy_Wh_nap += powernap * dt / 3600.0;
   // Cập nhật chuỗi hiển thị
   snapvao = String(currentnap,2) + "A | " 
