@@ -46,7 +46,7 @@ void setup() {
   if(ina.begin() )
   {
     ina.reset();
-    ina.configure(0.00242,1.0,5.0,10066);
+    ina.configure(0.002572,1.0,5.0,10066);
     ina.setAverage(INA226_512_SAMPLES);
   }
   if(ina2.begin() )
